@@ -110,10 +110,10 @@ score_tot
 
 #Jour 3 : Trouver les priorités des objets situés dans les sacoches ####
   #import fichier
-  chemin <- file.path("~","Travaux_R","adv_code","sacoches_data.csv")
+  chemin <- file.path("~","projets_git","adv_code","adv_code2022","data","sacoches_data.csv")
   data <- read.csv2(chemin)  
 
-  # Etoile 1
+  ## Etoile 1 ####
   # Séparer la ligne en 2 sacs
   data_modif <- data %>%
     mutate(nb_item = nchar(sac),
@@ -147,4 +147,33 @@ score_tot
     #somme des valeurs des objets
     somme <- sum(as.numeric(jointure$valeur))
     somme      
-      
+   
+    
+    ##Etoile 2 : trouver la lettre commune sur 3 sacs ####
+    # Transformer le sac en chaine de caratères
+    data_modif <- data
+    data_modif <- data_modif %>%
+      mutate(chaine_sac = str_extract_all(data_modif$sac, "[:alpha:]"))
+    
+    # Trouver la lettre commune dans les 3 premières lignes
+    objets_commun <- unlist(mapply(FUN = intersect, data_modif$chaine1,data_modif$chaine2))
+    class(objets_commun)
+    objets <- as.data.frame(objets_commun)
+    objets
+    colnames(objets) <- c("lettre")
+    
+    # Attribuer une note et sommer
+    
+    #Créer le vecteur de valeurs des lettres
+    val_min = cbind(letters, seq(1,26))
+    val_maj = cbind(LETTERS, seq(27,52))
+    val_lettres = rbind(val_min, val_maj)
+    valeurs_lettres <- as.data.frame(val_lettres)
+    colnames( valeurs_lettres ) <- c("lettre","valeur")
+    
+    #faire une jointure pour récupérer les valeurs des lettres
+    jointure <-  left_join(objets,valeurs_lettres)
+    
+    #somme des valeurs des objets
+    somme <- sum(as.numeric(jointure$valeur))
+    somme      
