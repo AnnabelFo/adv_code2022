@@ -120,14 +120,16 @@ score_tot
            #extrait la première moitié de la chaine de charactères
            sac1 = str_sub(sac,1,nb_item/2),
            #extrait la deuxième moitié de la chaine de charactères
-           sac2 = str_sub(sac,nb_item/2+1, nb_item),
-           #transformer les sacs en chaine
-            chaine1 = str_extract_all(data_modif$sac1, "[:alpha:]"),
+           sac2 = str_sub(sac,nb_item/2+1, nb_item))
+  data_modif <- data_modif %>%
+     #transformer les sacs en chaine
+    mutate( chaine1 = str_extract_all(data_modif$sac1, "[:alpha:]"),
             chaine2 = str_extract_all(data_modif$sac2, "[:alpha:]"))
 
   # Trouver la lettre commune dans les 2 sacs
   objets_commun <- unlist(mapply(FUN = intersect, data_modif$chaine1,data_modif$chaine2))
-  class(objets_commun)
+ objets_commun
+   class(objets_commun)
   objets <- as.data.frame(objets_commun)
   objets
  colnames(objets) <- c("lettre")
@@ -152,15 +154,50 @@ score_tot
     ##Etoile 2 : trouver la lettre commune sur 3 sacs ####
     # Transformer le sac en chaine de caratères
     data_modif <- data
-    data_modif <- data_modif %>%
-      mutate(chaine_sac = str_extract_all(data_modif$sac, "[:alpha:]"))
     
-    # Trouver la lettre commune dans les 3 premières lignes
-    objets_commun <- unlist(mapply(FUN = intersect, data_modif$chaine1,data_modif$chaine2))
-    class(objets_commun)
-    objets <- as.data.frame(objets_commun)
-    objets
-    colnames(objets) <- c("lettre")
+    #créer un vecteur pour identifier les groupes
+    num <- as.data.frame(rep(seq(1,3), times = 100))
+    colnames(num) <- c("numero")
+    
+    #fusion des num et des listes d'objets
+    objets_id <- cbind(num, data_modif) 
+    
+    #arranger le tableau pour faire passer en colonnes les lignes numérotée de 1 à 3
+    objets <- objets_id %>%
+      mutate(chaine_sac = str_extract_all(data_modif$sac, "[:alpha:]"))%>%
+      select(numero, chaine_sac)
+      
+    objets1 <- objets %>%
+      filter(num == 1)%>%
+      select(chaine_sac)
+    colnames(objets1) <- c("chaine1")
+     
+    objets2 <- objets %>%
+      filter(num == 2)%>%
+      select(chaine_sac)
+    colnames(objets2) <- c("chaine2")
+    
+    objets3 <- objets %>%
+      filter(num == 3)%>%
+      select(chaine_sac)
+    colnames(objets3) <- c("chaine3")
+    
+    objets_tri <- cbind(objets1, objets2, objets3)
+    
+    #créer une fonction intersect à 3 entrées
+    intersect3 <- function(a,b,c){
+    out <- intersect(intersect(a,b),c)
+    return(out)
+    }
+    
+    
+    # Trouver la lettre commune dans chaque groupe de 3 lignes
+    objets_communs <- unlist(mapply(FUN = intersect3,
+                                     objets_tri$chaine1, objets_tri$chaine2,
+                                     objets_tri$chaine3))
+    
+    objets_communs <- as.data.frame(objets_communs)
+    colnames(objets_communs) <- c("lettre")
     
     # Attribuer une note et sommer
     
@@ -169,11 +206,12 @@ score_tot
     val_maj = cbind(LETTERS, seq(27,52))
     val_lettres = rbind(val_min, val_maj)
     valeurs_lettres <- as.data.frame(val_lettres)
-    colnames( valeurs_lettres ) <- c("lettre","valeur")
+    colnames(valeurs_lettres) <- c("lettre","valeur")
     
     #faire une jointure pour récupérer les valeurs des lettres
-    jointure <-  left_join(objets,valeurs_lettres)
+    jointure <-  left_join(objets_communs,valeurs_lettres)
     
     #somme des valeurs des objets
     somme <- sum(as.numeric(jointure$valeur))
     somme      
+    
