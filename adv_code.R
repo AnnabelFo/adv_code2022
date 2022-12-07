@@ -108,12 +108,12 @@ score <- liste %>%
 score_tot <- sum(score$pt_tot)
 score_tot
 
-#Jour 3 : Trouver les priorités des objets situés dans les sacoches ####
+##Jour 3 : Trouver les priorités des objets situés dans les sacoches ####
   #import fichier
   chemin <- file.path("~","projets_git","adv_code","adv_code2022","data","sacoches_data.csv")
   data <- read.csv2(chemin)  
 
-  ## Etoile 1 ####
+    # Etoile 1 ####
   # Séparer la ligne en 2 sacs
   data_modif <- data %>%
     mutate(nb_item = nchar(sac),
@@ -151,7 +151,7 @@ score_tot
     somme      
    
     
-    ##Etoile 2 : trouver la lettre commune sur 3 sacs ####
+    #Etoile 2 : trouver la lettre commune sur 3 sacs ####
     # Transformer le sac en chaine de caratères
     data_modif <- data
     
@@ -214,4 +214,37 @@ score_tot
     #somme des valeurs des objets
     somme <- sum(as.numeric(jointure$valeur))
     somme      
+    
+
+## Jour 4 : Netoyyage du camp ####
+    # Etoile 1 : trouver les paires qui recoupent la même zone à nettoyer
+    
+    #import fichier
+    chemin <- file.path("~","projets_git","adv_code","adv_code2022","data","camp1.csv")
+    data <- read.csv2(chemin)  
+    
+    data_modif <- data
+    
+    data_modif <- data_modif %>%
+      mutate(redondant1 = ifelse(deb1 <= deb2 & fin1 >= fin2, 1, 0),
+             redondant2 = ifelse(deb2 <= deb1 & fin2 >= fin1, 1, 0))
+    
+    data_final <- data_modif %>%
+      mutate(redondant_inter = redondant1 + redondant2)%>%
+      mutate(redontant_tot = ifelse(redondant_inter>0, 1, 0))
+    
+    nb_redondant <- sum(data_final$redontant_tot)
+    nb_redondant
+    
+    #Etoile 2 : trouver les paires qui ont au moins une zone en commun
+    data_modif <- data
+    data_modif <- data_modif %>%
+      mutate(com = ifelse((deb1 <= deb2 & fin1 >= fin2) |
+                          (deb1 >= deb2 & fin1 <= fin2) |
+                          (deb1 >= deb2 & fin1 >= fin2 & fin2 >= deb1) |
+                          (deb1 <= deb2 & fin1 <= fin2 & deb2 <= fin1),
+                          1, 0))
+    nb_communs <- sum(data_modif$com)
+    nb_communs
+        
     
