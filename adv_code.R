@@ -1,4 +1,5 @@
-#Import bibliothèques####
+## Advent of Code 2022
+##Import bibliothèques####
 #Gestion des fichiers
 library(tidyverse)
 library(readxl)
@@ -113,7 +114,7 @@ score_tot
   chemin <- file.path("~","projets_git","adv_code","adv_code2022","data","sacoches_data.csv")
   data <- read.csv2(chemin)  
 
-    # Etoile 1 ####
+    ### Etoile 1 ####
   # Séparer la ligne en 2 sacs
   data_modif <- data %>%
     mutate(nb_item = nchar(sac),
@@ -151,7 +152,7 @@ score_tot
     somme      
    
     
-    #Etoile 2 : trouver la lettre commune sur 3 sacs ####
+    ### Etoile 2 : trouver la lettre commune sur 3 sacs ####
     # Transformer le sac en chaine de caratères
     data_modif <- data
     
@@ -215,8 +216,7 @@ score_tot
     somme <- sum(as.numeric(jointure$valeur))
     somme      
     
-
-## Jour 4 : Netoyyage du camp ####
+## Jour 4 : Netoyage du camp ####
     # Etoile 1 : trouver les paires qui recoupent la même zone à nettoyer
     
     #import fichier
@@ -225,6 +225,7 @@ score_tot
     
     data_modif <- data
     
+    str(data)
     data_modif <- data_modif %>%
       mutate(redondant1 = ifelse(deb1 <= deb2 & fin1 >= fin2, 1, 0),
              redondant2 = ifelse(deb2 <= deb1 & fin2 >= fin1, 1, 0))
@@ -247,4 +248,48 @@ score_tot
     nb_communs <- sum(data_modif$com)
     nb_communs
         
+    
+    
+## Jour 5 : rangement des caisses ####
+    #import fichier
+    chemin <- file.path("~","projets_git","adv_code","adv_code2022","data","data_caisses.csv")
+    data <- read.csv2(chemin)  
+    chemin2 <- file.path("~","projets_git","adv_code","adv_code2022","data","matrice_rangement.csv")
+    data_rangement <- read.csv2(chemin2) 
+    
+    
+    #Etoile 1 : ranger les caisses suivant le schéma
+    data_modif <- data
+    #remplace les cellule vide par des NA 
+    data_modif[data_modif == "" ] <- NA 
+
+    #Fonction : prend le tableau, déplace une caisse de la colonne i à la colonne j
+    
+    manitou <- function(tableau,col_dep,col_arr){
+      
+      #initialisation des valeurs
+      tableau_new <- tableau
+      longueur_dep <- as.numeric(sum(!is.na(tableau_new[,col_dep + 1])))
+      longueur_arr <- as.numeric(sum(!is.na(tableau_new[,col_arr + 1])))
+      
+      #récupère la dernière caisse de la colonne de départ
+      caisse_dep <- as.character(tableau_new[longueur_dep, col_dep + 1])
+      #ajoute la caisse sur le premier emplacement vide sur la colonne d'arrivée
+      tableau_new[longueur_arr + 1, col_arr+1] <- caisse_dep
+      #supprime la dernière caisse de la colonne de départ
+      tableau_new[longueur_dep, col_dep + 1] <- NA
+     
+      return(tableau_new)
+    }
+    
+
+    # Exécution du manitou x fois
+    for (j in 1:length(data_rangement))
+    {
+        for (i in 1:data_rangement[j,1]) {
+         manitou(data_modif,data_rangement$col_depart, data_rangement$col_arrivee)
+        }
+    }
+    
+
     
